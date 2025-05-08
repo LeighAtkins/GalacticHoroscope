@@ -190,5 +190,11 @@ function startGalacticHoroscope() {
   });
 }
 
-// Start the application
-startGalacticHoroscope();
+// Export functions for use in other modules
+module.exports = {
+  startGalacticHoroscope,
+  determineZodiacSign,
+  generateFortune,
+  isValidDate,
+  zodiacSigns
+}; 

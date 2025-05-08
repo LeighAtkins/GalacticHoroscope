@@ -1,0 +1,84 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Avoid Bash Commands in Windows Environments
+
+- **Do Not Use Bash Commands or Shell Scripts on Windows**
+  - Windows uses PowerShell or Command Prompt (cmd.exe) as its native shell
+  - Bash commands often fail on Windows even with Git Bash installed
+  - Path separators, environment variables, and command syntax differ significantly
+
+- **Use Node.js Native Modules When Possible**
+  - **✅ DO: Use Node.js built-in modules for cross-platform compatibility**
+    ```javascript
+    const fs = require('fs');
+    const path = require('path');
+    const { exec } = require('child_process');
+    
+    // Create directory cross-platform
+    fs.mkdirSync(path.join('parentDir', 'newDir'), { recursive: true });
+    ```
+  
+  - **❌ DON'T: Use bash-specific commands**
+    ```javascript
+    // Don't use system commands for file operations
+    exec('mkdir -p parentDir/newDir', (error, stdout, stderr) => { ... });
+    ```
+
+- **For CLI Tools, Use Cross-Platform Packages**
+  - **✅ DO: Use cross-platform packages**
+    ```javascript
+    // In package.json
+    {
+      "scripts": {
+        "start": "node app.js",
+        "clean": "rimraf dist"  // rimraf is a cross-platform rm -rf
+      },
+      "devDependencies": {
+        "rimraf": "^3.0.2"
+      }
+    }
+    ```
+  
+  - **❌ DON'T: Use shell-specific commands in npm scripts**
+    ```javascript
+    // Avoid in package.json
+    {
+      "scripts": {
+        "clean": "rm -rf dist"  // Won't work on Windows
+      }
+    }
+    ```
+
+- **Use Correct Path Formats**
+  - **✅ DO: Use path.join() for cross-platform paths**
+    ```javascript
+    const filePath = path.join('directory', 'subdirectory', 'file.txt');
+    ```
+  
+  - **❌ DON'T: Use forward slashes directly**
+    ```javascript
+    const filePath = 'directory/subdirectory/file.txt'; // May fail on Windows
+    ```
+
+- **When Terminal Commands Are Required**
+  - **✅ DO: Check the operating system and use appropriate commands**
+    ```javascript
+    const { platform } = require('os');
+    const { exec } = require('child_process');
+    
+    const clearCommand = platform() === 'win32' ? 'cls' : 'clear';
+    exec(clearCommand, (error, stdout, stderr) => { ... });
+    ```
+  
+  - **❌ DON'T: Assume bash is available**
+    ```javascript
+    exec('bash -c "some_command"', (error, stdout, stderr) => { ... });
+    ```
+
+- **For Task Master and MCP Integrations**
+  - **✅ DO: Use MCP tools directly** instead of shell commands
+  - **✅ DO: Use Node.js APIs** for file operations and process management
+  - **❌ DON'T: Use `run_terminal_cmd` with bash syntax** on Windows-based projects

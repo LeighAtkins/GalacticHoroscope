@@ -1,0 +1,45 @@
+{
+  "name": "galactichoroscope",
+  "version": "1.0.0",
+  "description": "A fun, interactive application that provides users with their astrological star sign and a personalized, AI-generated fortune.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeighAtkins/GalacticHoroscope.git"
+  },
+  "keywords": [
+    "astrology",
+    "horoscope",
+    "zodiac",
+    "fortune",
+    "node",
+    "cli"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LeighAtkins/GalacticHoroscope/issues"
+  },
+  "homepage": "https://github.com/LeighAtkins/GalacticHoroscope#readme",
+  "dependencies": {
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "eslint": "^9.26.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.3.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

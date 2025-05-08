@@ -1,8 +1,21 @@
 // Galactic Horoscope - Star Sign and Fortune Generator
-const readline = require('readline');
+import * as readline from 'readline';
+import { format } from 'date-fns';
+
+// Types for zodiac signs and related data
+export interface ZodiacSign {
+  name: string;
+  symbol: string;
+  start: { month: number; day: number };
+  end: { month: number; day: number };
+}
+
+export interface FortuneTemplates {
+  [category: string]: string[];
+}
 
 // Zodiac sign definitions with date ranges
-const zodiacSigns = [
+export const zodiacSigns: ZodiacSign[] = [
   { name: 'Capricorn', symbol: '♑', start: { month: 12, day: 22 }, end: { month: 1, day: 19 } },
   { name: 'Aquarius', symbol: '♒', start: { month: 1, day: 20 }, end: { month: 2, day: 18 } },
   { name: 'Pisces', symbol: '♓', start: { month: 2, day: 19 }, end: { month: 3, day: 20 } },
@@ -18,7 +31,7 @@ const zodiacSigns = [
 ];
 
 // Fortune templates by category
-const fortuneTemplates = {
+export const fortuneTemplates: FortuneTemplates = {
   career: [
     "Your career will take an unexpected turn this {timeFrame}, leading to new opportunities.",
     "A colleague will offer valuable insights that will boost your professional growth.",
@@ -49,12 +62,17 @@ const fortuneTemplates = {
   ]
 };
 
-const timeFrames = ["week", "month", "season", "year"];
-const intensities = ["slightly", "notably", "significantly", "dramatically", "profoundly"];
-const qualities = ["creativity", "intuition", "discipline", "communication", "leadership", "empathy"];
+export const timeFrames: string[] = ["week", "month", "season", "year"];
+export const intensities: string[] = ["slightly", "notably", "significantly", "dramatically", "profoundly"];
+export const qualities: string[] = ["creativity", "intuition", "discipline", "communication", "leadership", "empathy"];
 
-// Function to determine zodiac sign based on birth date
-function determineZodiacSign(month, day) {
+/**
+ * Determines zodiac sign based on birth date
+ * @param month Birth month (1-12)
+ * @param day Birth day (1-31)
+ * @returns The zodiac sign or null if not found
+ */
+export function determineZodiacSign(month: number, day: number): ZodiacSign | null {
   // Handle Capricorn's special case (spans December-January)
   if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) {
     return zodiacSigns[0]; // Capricorn
@@ -73,11 +91,15 @@ function determineZodiacSign(month, day) {
   return null;
 }
 
-// Function to generate a random fortune
-function generateFortune(sign) {
+/**
+ * Generates a random fortune based on the zodiac sign
+ * @param sign The zodiac sign
+ * @returns A formatted fortune string
+ */
+export function generateFortune(sign: ZodiacSign): string {
   // Select random categories
   const categories = Object.keys(fortuneTemplates);
-  const selectedCategories = [];
+  const selectedCategories: string[] = [];
   
   // Ensure we get 2-3 unique categories
   while (selectedCategories.length < Math.floor(Math.random() * 2) + 2) {
@@ -117,8 +139,13 @@ function generateFortune(sign) {
   return fortune;
 }
 
-// Function to validate date input
-function isValidDate(month, day) {
+/**
+ * Validates if a date is valid
+ * @param month Month (1-12)
+ * @param day Day (1-31, varies by month)
+ * @returns Boolean indicating if the date is valid
+ */
+export function isValidDate(month: number, day: number): boolean {
   if (month < 1 || month > 12) return false;
   
   // Check days in month (simplified version)
@@ -126,8 +153,10 @@ function isValidDate(month, day) {
   return day >= 1 && day <= daysInMonth[month];
 }
 
-// Main application function
-function startGalacticHoroscope() {
+/**
+ * Main application function
+ */
+export function startGalacticHoroscope(): void {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -137,7 +166,7 @@ function startGalacticHoroscope() {
   console.log("Discover your star sign and receive a personalized cosmic fortune!\n");
   
   // Ask for birth month
-  rl.question("Enter your birth month (1-12): ", (monthInput) => {
+  rl.question("Enter your birth month (1-12): ", (monthInput: string) => {
     const month = parseInt(monthInput, 10);
     
     if (isNaN(month) || month < 1 || month > 12) {
@@ -147,7 +176,7 @@ function startGalacticHoroscope() {
     }
     
     // Ask for birth day
-    rl.question("Enter your birth day (1-31): ", (dayInput) => {
+    rl.question("Enter your birth day (1-31): ", (dayInput: string) => {
       const day = parseInt(dayInput, 10);
       
       if (isNaN(day) || !isValidDate(month, day)) {
@@ -157,7 +186,7 @@ function startGalacticHoroscope() {
       }
       
       // Ask for birth year (optional)
-      rl.question("Enter your birth year (optional, press Enter to skip): ", (yearInput) => {
+      rl.question("Enter your birth year (optional, press Enter to skip): ", (yearInput: string) => {
         // Determine zodiac sign
         const sign = determineZodiacSign(month, day);
         
@@ -177,7 +206,7 @@ function startGalacticHoroscope() {
         console.log(fortune);
         
         // Ask if user wants another reading
-        rl.question("\nWould you like another reading? (y/n): ", (answer) => {
+        rl.question("\nWould you like another reading? (y/n): ", (answer: string) => {
           rl.close();
           if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
             startGalacticHoroscope(); // Restart
@@ -188,7 +217,4 @@ function startGalacticHoroscope() {
       });
     });
   });
-}
-
-// Start the application
-startGalacticHoroscope();
+} 

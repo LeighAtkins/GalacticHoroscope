@@ -1,0 +1,69 @@
+<context>
+# Overview  
+Galactic Horoscope is a fun, interactive application that provides users with their astrological star sign and a personalized, AI-generated fortune. Users input their birth date and year, and the app instantly reveals their zodiac sign and a unique, LLM-powered fortune. This product is designed for anyone interested in astrology, daily horoscopes, or playful, AI-driven entertainment.
+
+# Core Features  
+- **Star Sign Detection**
+  - Determines the user's zodiac sign based on their birth date and year.
+  - Important for providing personalized astrological content.
+  - Uses standard zodiac date ranges to map input to a sign.
+- **LLM-Powered Fortune Telling**
+  - Generates a unique, randomized fortune for the user using AI/LLM or a simulated approach.
+  - Adds entertainment value and replayability.
+  - Integrates with an LLM API or uses a local randomization algorithm for fortune generation.
+- **User Input Handling**
+  - Prompts the user for their birth date and year in a user-friendly way.
+  - Ensures input is validated and errors are handled gracefully.
+
+# User Experience  
+- **User Personas**: Astrology enthusiasts, casual users, people seeking entertainment or daily inspiration.
+- **Key User Flows**:
+  1. User launches the app (CLI or web).
+  2. User is prompted to enter their birth date and year.
+  3. App displays the user's star sign and a personalized fortune.
+- **UI/UX Considerations**: Simple, clear prompts; playful and engaging output; error messages for invalid input.
+</context>
+<PRD>
+# Technical Architecture  
+- **System Components**:
+  - Input handler (CLI or web form)
+  - Star sign calculator module
+  - Fortune generator (LLM API integration or local randomizer)
+  - Output renderer (console or web UI)
+- **Data Models**:
+  - User input: birth date, year
+  - Zodiac sign definitions (date ranges)
+  - Fortune templates or LLM prompts
+- **APIs and Integrations**:
+  - Optional: Integration with OpenAI or similar LLM for fortune generation
+- **Infrastructure Requirements**:
+  - Node.js runtime
+  - (Optional) API key management for LLM
+
+# Development Roadmap  
+- **MVP Requirements**:
+  - CLI app that prompts for birth date/year, returns star sign and random fortune
+  - Input validation and error handling
+  - Basic set of fortune templates if LLM is not used
+- **Future Enhancements**:
+  - Web UI version
+  - Integration with real LLM API for more dynamic fortunes
+  - User history and sharing features
+
+# Logical Dependency Chain
+- Implement input handler and validation first
+- Build star sign calculator module
+- Add fortune generator (start with local randomizer, then LLM integration)
+- Integrate modules and render output
+- (Optional) Add web UI and advanced features
+
+# Risks and Mitigations  
+- **Technical challenges**: LLM API integration may require API keys and error handling; fallback to local randomizer if needed
+- **MVP scoping**: Focus on CLI MVP to ensure rapid delivery
+- **Resource constraints**: Use open-source libraries and keep dependencies minimal
+
+# Appendix  
+- Zodiac sign date ranges (Aries, Taurus, etc.)
+- Example fortune templates
+- LLM prompt examples
+</PRD> 
