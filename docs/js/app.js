@@ -744,7 +744,15 @@ document.addEventListener('DOMContentLoaded', () => {
       showLoading();
       
       try {
-        // Call the API
+        // Special GitHub Pages notification
+        if (isGitHubPages) {
+          console.log('GitHub Pages mode: Using locally generated data');
+          
+          // Add a small delay to simulate API request (better UX)
+          await new Promise(resolve => setTimeout(resolve, 800));
+        }
+        
+        // Call the API (which will use local data on GitHub Pages)
         const horoscope = await fetchHoroscope(month, day);
         
         // Display horoscope data
@@ -941,12 +949,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // GITHUB PAGES SAFETY CHECK - Always ensure we never make API calls on GitHub Pages
         if (isGitHubPages || window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             console.warn('GitHub Pages or non-localhost environment detected - bypassing API call');
-            const sign = determineZodiacSign(month, day);
-            if (sign) {
-                console.log(`Using local data for ${sign.toLowerCase()}`);
-                return getFallbackHoroscope(sign, month, day);
+            const signResult = determineZodiacSign(month, day);
+            if (signResult) {
+                // Extract the sign name from the object or use it directly if it's a string
+                const signName = typeof signResult === 'object' ? signResult.name.toLowerCase() : signResult.toLowerCase();
+                console.log(`Using local data for ${signName}`);
+                return getFallbackHoroscope(signName, month, day);
             }
-            throw new Error('Could not determine sign from date');
+            // Hardcoded fallback if the sign determination fails
+            console.warn('Sign determination failed - using hardcoded fallback');
+            return getFallbackHoroscope('taurus', month, day);
         }
         
         console.log(`Fetching horoscope for ${month}/${day} from ${API_URL}`);
@@ -954,24 +966,32 @@ document.addEventListener('DOMContentLoaded', () => {
         // When on GitHub Pages, always use local data
         if (isGitHubPages) {
             console.log('GitHub Pages detected - using local data instead of API');
-            const sign = determineZodiacSign(month, day);
-            if (sign) {
-                console.log(`Using local data for ${sign.toLowerCase()}`);
-                return getFallbackHoroscope(sign, month, day);
+            const signResult = determineZodiacSign(month, day);
+            if (signResult) {
+                // Extract the sign name from the object or use it directly if it's a string
+                const signName = typeof signResult === 'object' ? signResult.name.toLowerCase() : signResult.toLowerCase();
+                console.log(`Using local data for ${signName}`);
+                return getFallbackHoroscope(signName, month, day);
             }
-            throw new Error('Could not determine sign from date');
+            // Hardcoded fallback if the sign determination fails
+            console.warn('Sign determination failed - using hardcoded fallback');
+            return getFallbackHoroscope('taurus', month, day);
         }
         
         // Check if network is available before attempting to fetch
         if (!isNetworkAvailable()) {
             console.warn('Network is offline - using fallback data');
             // For offline mode, return a fallback with the zodiac sign
-            const sign = determineZodiacSign(month, day);
-            if (sign) {
-                console.log(`Using fallback data for ${sign.toLowerCase()} due to network being offline`);
-                return getFallbackHoroscope(sign, month, day);
+            const signResult = determineZodiacSign(month, day);
+            if (signResult) {
+                // Extract the sign name from the object or use it directly if it's a string
+                const signName = typeof signResult === 'object' ? signResult.name.toLowerCase() : signResult.toLowerCase();
+                console.log(`Using fallback data for ${signName} due to network being offline`);
+                return getFallbackHoroscope(signName, month, day);
             }
-            throw new Error('Network is offline');
+            // Hardcoded fallback if the sign determination fails
+            console.warn('Sign determination failed - using hardcoded fallback');
+            return getFallbackHoroscope('taurus', month, day);
         }
         
         // Add a timeout to the fetch request
@@ -1086,26 +1106,65 @@ document.addEventListener('DOMContentLoaded', () => {
    * Get fallback horoscope data when API is unavailable
    */
   function getFallbackHoroscope(signName, month, day) {
-    // Basic fallback data
-    const fallbackData = {
-      sign: {
-        name: capitalizeFirstLetter(signName),
-        symbol: getSignSymbol(signName),
-        dates: getSignDateRange(signName),
-        element: getSignElement(signName),
-        rulingPlanet: getSignPlanet(signName)
-      },
-      fortune: `As a ${capitalizeFirstLetter(signName)}, your natural traits will be highlighted today. Trust your instincts and stay true to yourself.`,
-      insight: isGitHubPages ? 
-        "GitHub Pages Mode: Using locally generated content (APIs not supported)" : 
-        "Offline mode: Using locally generated content",
-      cosmicNumber: ((month + day) % 12) + 1,
-      date: new Date().toISOString().split('T')[0],
-      offlineGenerated: true
-    };
-    
-    console.log('Generated fallback data:', fallbackData);
-    return fallbackData;
+    try {
+      // Make sure we have a valid string signName
+      let processedSignName = signName;
+      
+      // Handle case where an object was passed
+      if (typeof signName === 'object' && signName !== null) {
+        processedSignName = signName.name || 'taurus';
+      }
+      
+      // Make sure it's a string and lowercase
+      processedSignName = String(processedSignName).toLowerCase();
+      
+      // Validate against known signs, use default if invalid
+      const validSigns = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 
+                          'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
+      
+      if (!validSigns.includes(processedSignName)) {
+        console.warn(`Invalid sign name "${processedSignName}" - using taurus as fallback`);
+        processedSignName = 'taurus';
+      }
+      
+      // Basic fallback data
+      const fallbackData = {
+        sign: {
+          name: capitalizeFirstLetter(processedSignName),
+          symbol: getSignSymbol(processedSignName),
+          dates: getSignDateRange(processedSignName),
+          element: getSignElement(processedSignName),
+          rulingPlanet: getSignPlanet(processedSignName)
+        },
+        fortune: `As a ${capitalizeFirstLetter(processedSignName)}, your natural traits will be highlighted today. Trust your instincts and stay true to yourself.`,
+        insight: isGitHubPages ? 
+          "GitHub Pages Mode: Using locally generated content (APIs not supported)" : 
+          "Offline mode: Using locally generated content",
+        cosmicNumber: ((month + day) % 12) + 1,
+        date: new Date().toISOString().split('T')[0],
+        offlineGenerated: true
+      };
+      
+      console.log('Generated fallback data:', fallbackData);
+      return fallbackData;
+    } catch (error) {
+      console.error('Error generating fallback horoscope:', error);
+      // Ultimate fallback
+      return {
+        sign: {
+          name: 'Taurus',
+          symbol: '♉',
+          dates: 'April 20 - May 20',
+          element: 'Earth',
+          rulingPlanet: 'Venus'
+        },
+        fortune: 'Trust your instincts and stay true to yourself.',
+        insight: 'Emergency fallback mode due to data processing error',
+        cosmicNumber: 5,
+        date: new Date().toISOString().split('T')[0],
+        offlineGenerated: true
+      };
+    }
   }
   
   /**
@@ -1169,35 +1228,55 @@ document.addEventListener('DOMContentLoaded', () => {
   
   /**
    * Determine zodiac sign based on month and day
+   * @param {number|string} month - Month (1-12)
+   * @param {number|string} day - Day (1-31)
+   * @returns {string} The zodiac sign name in lowercase
    */
   function determineZodiacSign(month, day) {
-    // Month is 1-based (1 = January)
-    if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) {
-      return 'aries';
-    } else if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) {
-      return 'taurus';
-    } else if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) {
-      return 'gemini';
-    } else if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) {
-      return 'cancer';
-    } else if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) {
-      return 'leo';
-    } else if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) {
-      return 'virgo';
-    } else if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) {
-      return 'libra';
-    } else if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) {
-      return 'scorpio';
-    } else if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) {
-      return 'sagittarius';
-    } else if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) {
-      return 'capricorn';
-    } else if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) {
-      return 'aquarius';
-    } else if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) {
-      return 'pisces';
+    try {
+      // Ensure month and day are valid numbers
+      const m = parseInt(month, 10);
+      const d = parseInt(day, 10);
+      
+      if (isNaN(m) || isNaN(d)) {
+        console.error(`Invalid month or day values: month=${month}, day=${day}`);
+        return 'taurus'; // Default fallback
+      }
+      
+      // Month is 1-based (1 = January)
+      if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) {
+        return 'aries';
+      } else if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) {
+        return 'taurus';
+      } else if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) {
+        return 'gemini';
+      } else if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) {
+        return 'cancer';
+      } else if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) {
+        return 'leo';
+      } else if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) {
+        return 'virgo';
+      } else if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) {
+        return 'libra';
+      } else if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) {
+        return 'scorpio';
+      } else if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) {
+        return 'sagittarius';
+      } else if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) {
+        return 'capricorn';
+      } else if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) {
+        return 'aquarius';
+      } else if ((m === 2 && d >= 19) || (m === 3 && d <= 20)) {
+        return 'pisces';
+      }
+      
+      // If we get here, something's wrong with the date - use a default
+      console.warn(`Could not determine sign for: month=${m}, day=${d}, using default`);
+      return 'taurus'; // Default fallback
+    } catch (error) {
+      console.error('Error in determineZodiacSign:', error);
+      return 'taurus'; // Emergency fallback
     }
-    return null;
   }
   
   /**
