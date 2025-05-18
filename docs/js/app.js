@@ -7,6 +7,12 @@ import * as THREE from './lib/three.module.js';
 import { OrbitControls } from './lib/OrbitControls.js';
 import { OBJLoader } from './lib/OBJLoader.js';
 
+// Detect if we're running on GitHub Pages
+const isGitHubPages = window.location.hostname.includes('github.io');
+if (isGitHubPages) {
+  console.log('Running on GitHub Pages - API calls will use local data');
+}
+
 // Global variables for network status tracking
 let lastSuccessfulApiCall = null;
 let lastFailedApiCall = null;
@@ -140,15 +146,19 @@ function recordFailedApiCall() {
 }
 
 // Network status tracking
-let isOnline = navigator.onLine;
+let isOnline = navigator.onLine && !isGitHubPages;
 
 function isNetworkAvailable() {
+  // When on GitHub Pages, the API network is never available
+  if (isGitHubPages) {
+    return false;
+  }
   return isOnline;
 }
 
 // Update network status
 window.addEventListener('online', () => {
-  isOnline = true;
+  isOnline = true && !isGitHubPages;
   console.log('Network connection restored');
   updateNetworkStatus();
 });
@@ -171,7 +181,7 @@ function updateNetworkStatus() {
 }
 
 // Initial network state check
-console.log('Initial network state, assuming online based on navigator.onLine');
+console.log(`Initial network state: ${isGitHubPages ? 'GitHub Pages mode (API calls disabled)' : (isOnline ? 'Online' : 'Offline')}`);
 updateNetworkStatus();
 
 // Export the main initialization function
@@ -263,6 +273,13 @@ function updateSignInfo(sign) {
     
     // Show loading state
     signInfo.innerHTML = '<div class="sign-detail"><div class="sign-detail-value">Loading sign information...</div></div>';
+    
+    // When on GitHub Pages, always use local data
+    if (isGitHubPages) {
+        console.log('GitHub Pages detected - using local data for sign information');
+        useLocalData(sign, isViewerPage);
+        return;
+    }
     
     // Check if network is available immediately
     if (!isNetworkAvailable()) {
@@ -840,6 +857,17 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         console.log(`Fetching horoscope for ${month}/${day} from ${API_URL}`);
         
+        // When on GitHub Pages, always use local data
+        if (isGitHubPages) {
+            console.log('GitHub Pages detected - using local data instead of API');
+            const sign = determineZodiacSign(month, day);
+            if (sign) {
+                console.log(`Using local data for ${sign.toLowerCase()}`);
+                return getFallbackHoroscope(sign, month, day);
+            }
+            throw new Error('Could not determine sign from date');
+        }
+        
         // Check if network is available before attempting to fetch
         if (!isNetworkAvailable()) {
             console.warn('Network is offline - using fallback data');
@@ -974,7 +1002,9 @@ document.addEventListener('DOMContentLoaded', () => {
         rulingPlanet: getSignPlanet(signName)
       },
       fortune: `As a ${capitalizeFirstLetter(signName)}, your natural traits will be highlighted today. Trust your instincts and stay true to yourself.`,
-      insight: "Offline mode: Using locally generated content",
+      insight: isGitHubPages ? 
+        "GitHub Pages Mode: Using locally generated content (APIs not supported)" : 
+        "Offline mode: Using locally generated content",
       cosmicNumber: ((month + day) % 12) + 1,
       date: new Date().toISOString().split('T')[0],
       offlineGenerated: true
@@ -1483,6 +1513,12 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   function showError(message, suggestion = '') {
     if (!errorMessage) return;
+    
+    // If we're on GitHub Pages and having API issues, replace with a more helpful message
+    if (isGitHubPages && (message.includes('horoscope service') || message.includes('API'))) {
+      message = "Using offline mode on GitHub Pages";
+      suggestion = "GitHub Pages doesn't support server APIs, so we're using local data instead. This is normal behavior.";
+    }
     
     // Create rich error message with suggestion if provided
     let errorHTML = `<div class="error-message-text">${message}</div>`;

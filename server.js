@@ -339,7 +339,7 @@ app.get('/api/horoscope', validateDateParameters, (req, res) => {
 
 // Fallback route for all other requests to serve index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'docs', 'index.html'));
 });
 
 // Start the server
