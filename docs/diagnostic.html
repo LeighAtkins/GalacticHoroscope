@@ -381,9 +381,9 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000);
                     
-                    const response = await fetch(`/api/signs/${sign}`, { 
+                    const response = await fetch(`api/signs/${sign}`, {
                         signal: controller.signal,
-                        cache: 'no-store'
+                        headers: { 'Cache-Control': 'no-cache' }
                     });
                     
                     clearTimeout(timeoutId);
@@ -446,9 +446,9 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000);
                     
-                    const response = await fetch(`/api/horoscope?month=${month}&day=${day}`, { 
+                    const response = await fetch(`api/horoscope?month=${month}&day=${day}`, {
                         signal: controller.signal,
-                        cache: 'no-store'
+                        headers: { 'Cache-Control': 'no-cache' }
                     });
                     
                     clearTimeout(timeoutId);

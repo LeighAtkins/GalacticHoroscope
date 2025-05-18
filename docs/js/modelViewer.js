@@ -171,8 +171,8 @@ export class ModelViewer {
         this.model = null;
       }
 
-      // Determine full path
-      const fullPath = modelPath.startsWith('/') ? modelPath : `/models/${modelPath}.obj`;
+      // Determine full path - use relative paths now that we're in the docs folder
+      const fullPath = modelPath.startsWith('/') ? modelPath.substring(1) : `models/${modelPath}.obj`;
       console.log('Attempting to load model from full path:', fullPath);
 
       // Load the model

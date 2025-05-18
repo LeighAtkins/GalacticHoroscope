@@ -5,7 +5,7 @@ import { initApp } from './app.js';
 // Check if server has models directory
 async function checkModelsDirectory() {
     try {
-        const response = await fetch('/models/');
+        const response = await fetch('models/');
         if (!response.ok) {
             console.warn('Models directory may not be accessible:', response.status, response.statusText);
             return false;

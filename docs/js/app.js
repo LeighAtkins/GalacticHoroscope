@@ -276,20 +276,20 @@ function updateSignInfo(sign) {
     const timeoutId = setTimeout(() => controller.abort(), 5000); // Extended timeout to 5 seconds
     
     // Add some client debug info
-    console.log(`Attempting to fetch sign data from: /api/signs/${sign}`);
+    console.log(`Attempting to fetch sign data from: api/signs/${sign}`);
     
     // Add retry mechanism
     let retryCount = 0;
     const maxRetries = 1;
 
     function fetchSignData() {
-        console.log(`Attempting to fetch sign data from: /api/signs/${sign}`);
+        console.log(`Attempting to fetch sign data from: api/signs/${sign}`);
         
         // Create an abort controller for timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
         
-        fetch(`/api/signs/${sign}`, { 
+        fetch(`api/signs/${sign}`, { 
             signal: controller.signal,
             headers: { 'Cache-Control': 'no-cache' } // Prevent caching issues
         })
@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // API endpoint for horoscope
-  const API_URL = '/api/horoscope';
+  const API_URL = 'api/horoscope';
   
   /**
    * Update days in the dropdown based on selected month

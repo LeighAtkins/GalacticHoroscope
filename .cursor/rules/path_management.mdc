@@ -1,0 +1,95 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Path Management
+
+## Path References
+
+- **Use Relative Paths for Static Assets**
+  - Always use relative paths for local assets to improve portability
+  ```html
+  <!-- ✅ DO: Use relative paths -->
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js"></script>
+  
+  <!-- ❌ DON'T: Use absolute paths -->
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/main.js"></script>
+  ```
+
+- **Use Relative Paths in JavaScript**
+  - Prefer relative paths for imports and fetch calls
+  ```javascript
+  // ✅ DO: Use relative paths for API requests
+  fetch('api/endpoint')
+  
+  // ❌ DON'T: Use absolute paths that break when folder structure changes
+  fetch('/api/endpoint')
+  ```
+
+## Import Maps
+
+- **Configure Import Maps Correctly**
+  - When using ES modules with import maps, ensure paths are relative
+  ```html
+  <!-- ✅ DO: Use relative paths in import maps -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "js/lib/three.module.js",
+      "three/addons/": "js/lib/"
+    }
+  }
+  </script>
+  
+  <!-- ❌ DON'T: Use absolute paths in import maps -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/js/lib/three.module.js",
+      "three/addons/": "/js/lib/"
+    }
+  }
+  </script>
+  ```
+
+## Path Handling Functions
+
+- **Use Path Handling Functions**
+  - Create utility functions to handle path construction
+  ```javascript
+  // ✅ DO: Create path utility functions
+  function assetPath(path) {
+    return path.startsWith('/') ? path.substring(1) : path;
+  }
+  
+  // Usage
+  const model = await loader.loadAsync(assetPath(`models/${modelName}.obj`));
+  ```
+
+## Testing After Folder Changes
+
+- **Systematic Testing After Path Changes**
+  1. Check for 404 errors in browser console
+  2. Grep the codebase for absolute paths: `grep -r "src=\"/" --include="*.html" .`
+  3. Use the path testing script to verify all paths are relative
+  4. Test on different environments (local, staging, production)
+
+## Base URL Configuration (If Needed)
+
+- **Use Base URL for Flexibility**
+  - For applications that might be deployed in different contexts, use a configurable base URL
+  ```html
+  <!-- ✅ DO: Add base element when needed -->
+  <base href="/app/">
+  ```
+  
+  ```javascript
+  // ✅ DO: Use configurable base URL in JavaScript
+  const BASE_URL = window.location.pathname.includes('/docs/') ? 'docs/' : '';
+  
+  // Use in fetch calls
+  fetch(`${BASE_URL}api/endpoint`);
+  ```
