@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    
+    <div>
+        <button id="test-aries">Test /api/signs/aries</button>
+        <button id="test-horoscope">Test /api/horoscope</button>
+        <button id="test-status">Check Network Status</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(message, isSuccess) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.textContent = message;
+            resultsDiv.prepend(resultDiv);
+        }
+        
+        async function testApiEndpoint(url, params = {}) {
+            try {
+                const fullUrl = params ? 
+                    `${url}?${new URLSearchParams(params)}` : url;
+                
+                addResult(`Attempting to fetch: ${fullUrl}`, true);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const response = await fetch(fullUrl, { 
+                    signal: controller.signal,
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                addResult(`Success! Response: ${JSON.stringify(data).substring(0, 100)}...`, true);
+                return data;
+            } catch (error) {
+                addResult(`Error: ${error.message}`, false);
+                if (error.name === 'AbortError') {
+                    addResult('Request timed out after 5 seconds', false);
+                }
+                return null;
+            }
+        }
+        
+        function checkNetworkStatus() {
+            const isOnline = navigator.onLine;
+            addResult(`Navigator.onLine reports: ${isOnline ? 'ONLINE' : 'OFFLINE'}`, isOnline);
+            
+            // Test connection to Google as a general internet connectivity test
+            fetch('https://www.google.com', { mode: 'no-cors' })
+                .then(() => {
+                    addResult('Internet connectivity test (Google): SUCCESS', true);
+                })
+                .catch(error => {
+                    addResult(`Internet connectivity test (Google): FAILED - ${error.message}`, false);
+                });
+                
+            return isOnline;
+        }
+        
+        document.getElementById('test-aries').addEventListener('click', () => {
+            testApiEndpoint('/api/signs/aries');
+        });
+        
+        document.getElementById('test-horoscope').addEventListener('click', () => {
+            testApiEndpoint('/api/horoscope', { month: 6, day: 15 });
+        });
+        
+        document.getElementById('test-status').addEventListener('click', () => {
+            checkNetworkStatus();
+        });
+        
+        // Initial status check
+        checkNetworkStatus();
+    </script>
+</body>
+</html> 

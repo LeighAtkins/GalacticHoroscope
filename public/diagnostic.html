@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galactic Horoscope - Diagnostic Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .status-box {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            background-color: #f7f7f7;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        
+        pre {
+            background-color: #f7f7f7;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.2);
+            border-radius: 50%;
+            border-top-color: #3498db;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .badge-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Galactic Horoscope - Diagnostic Tool</h1>
+        <p>This tool helps you diagnose connectivity issues with the Galactic Horoscope application.</p>
+        
+        <div id="browser-info" class="status-box info">
+            <h3>Browser Information</h3>
+            <p>Loading browser details...</p>
+        </div>
+        
+        <div id="network-status" class="status-box">
+            <h3>Network Status</h3>
+            <p>Checking network connectivity...</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>API Tests</h2>
+        <p>Run tests against the Galactic Horoscope API endpoints:</p>
+        
+        <div>
+            <button id="test-server">Test Server Connectivity</button>
+            <button id="test-signs-api">Test Signs API</button>
+            <button id="test-horoscope-api">Test Horoscope API</button>
+            <button id="run-all-tests">Run All Tests</button>
+        </div>
+        
+        <div id="test-results">
+            <p>Click a button above to run tests.</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Troubleshooting Guide</h2>
+        
+        <h3>Common Issues</h3>
+        <ul>
+            <li><strong>Connection Errors:</strong> Make sure the server is running on <code>http://localhost:3000</code></li>
+            <li><strong>404 Not Found Errors:</strong> Check that API endpoints are correctly spelled and case-sensitive</li>
+            <li><strong>Network Offline:</strong> Enable your network connection or use the app's offline mode</li>
+        </ul>
+        
+        <h3>Support Information</h3>
+        <p>If you're experiencing issues, try the following:</p>
+        <ol>
+            <li>Refresh the page</li>
+            <li>Clear your browser cache</li>
+            <li>Restart the server application</li>
+            <li>Check browser console for specific error messages</li>
+        </ol>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display browser information
+            const browserInfoDiv = document.getElementById('browser-info');
+            browserInfoDiv.innerHTML = `
+                <h3>Browser Information</h3>
+                <table>
+                    <tr>
+                        <th>User Agent</th>
+                        <td>${navigator.userAgent}</td>
+                    </tr>
+                    <tr>
+                        <th>Platform</th>
+                        <td>${navigator.platform}</td>
+                    </tr>
+                    <tr>
+                        <th>Cookies Enabled</th>
+                        <td>${navigator.cookieEnabled ? 'Yes' : 'No'}</td>
+                    </tr>
+                    <tr>
+                        <th>Language</th>
+                        <td>${navigator.language}</td>
+                    </tr>
+                    <tr>
+                        <th>Online Status</th>
+                        <td>
+                            <span class="badge ${navigator.onLine ? 'badge-success' : 'badge-danger'}">
+                                ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            `;
+            
+            // Check network status
+            checkNetworkStatus();
+            
+            // Add event listeners to buttons
+            document.getElementById('test-server').addEventListener('click', testServerConnectivity);
+            document.getElementById('test-signs-api').addEventListener('click', testSignsApi);
+            document.getElementById('test-horoscope-api').addEventListener('click', testHoroscopeApi);
+            document.getElementById('run-all-tests').addEventListener('click', runAllTests);
+            
+            // Set up network status monitoring
+            window.addEventListener('online', () => {
+                checkNetworkStatus();
+                addTestResult('Network status changed', 'ONLINE', 'success');
+            });
+            
+            window.addEventListener('offline', () => {
+                checkNetworkStatus();
+                addTestResult('Network status changed', 'OFFLINE', 'error');
+            });
+        });
+        
+        function checkNetworkStatus() {
+            const networkStatusDiv = document.getElementById('network-status');
+            const isOnline = navigator.onLine;
+            
+            networkStatusDiv.className = `status-box ${isOnline ? 'success' : 'error'}`;
+            
+            if (isOnline) {
+                networkStatusDiv.innerHTML = `
+                    <h3>Network Status</h3>
+                    <p><span class="badge badge-success">ONLINE</span> Your browser reports that you are connected to the network.</p>
+                    <p>Testing actual connectivity...</p>
+                `;
+                
+                // Test actual internet connectivity
+                fetch('https://www.google.com', { mode: 'no-cors', cache: 'no-store' })
+                    .then(() => {
+                        networkStatusDiv.innerHTML = `
+                            <h3>Network Status</h3>
+                            <p><span class="badge badge-success">ONLINE</span> Your device is connected to the internet.</p>
+                        `;
+                    })
+                    .catch(error => {
+                        networkStatusDiv.className = 'status-box warning';
+                        networkStatusDiv.innerHTML = `
+                            <h3>Network Status</h3>
+                            <p><span class="badge badge-warning">LIMITED</span> Your browser reports that you're online, but we couldn't connect to the internet.</p>
+                            <p>Error: ${error.message}</p>
+                            <p>This might be due to a firewall, proxy, or restricted network.</p>
+                        `;
+                    });
+            } else {
+                networkStatusDiv.innerHTML = `
+                    <h3>Network Status</h3>
+                    <p><span class="badge badge-danger">OFFLINE</span> Your browser reports that you are not connected to the network.</p>
+                    <p>The Galactic Horoscope app will use offline mode and local data.</p>
+                `;
+            }
+        }
+        
+        function addTestResult(title, message, type = 'info', details = null) {
+            const resultsDiv = document.getElementById('test-results');
+            
+            if (resultsDiv.querySelector('p')) {
+                resultsDiv.innerHTML = '';
+            }
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `status-box ${type}`;
+            
+            let content = `<h4>${title}</h4><p>${message}</p>`;
+            
+            if (details) {
+                content += `<pre>${typeof details === 'object' ? JSON.stringify(details, null, 2) : details}</pre>`;
+            }
+            
+            resultDiv.innerHTML = content;
+            resultsDiv.prepend(resultDiv);
+        }
+        
+        async function testServerConnectivity() {
+            addTestResult('Server Test', 'Testing connection to server...', 'info');
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const response = await fetch('/', { 
+                    signal: controller.signal,
+                    cache: 'no-store'
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    addTestResult('Server Test', 'Successfully connected to server!', 'success', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        url: response.url
+                    });
+                } else {
+                    addTestResult('Server Test', `Server responded with error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                let errorMessage = error.message;
+                let errorType = 'error';
+                
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Connection timed out after 5 seconds. The server may be down or unresponsive.';
+                } else if (!navigator.onLine) {
+                    errorMessage = 'Your device is offline. Please check your internet connection.';
+                    errorType = 'warning';
+                }
+                
+                addTestResult('Server Test', `Failed to connect to server: ${errorMessage}`, errorType);
+            }
+        }
+        
+        async function testSignsApi() {
+            // Test all zodiac signs
+            const signs = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 
+                           'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
+            
+            addTestResult('Signs API Test', 'Testing connection to Zodiac Signs API...', 'info');
+            
+            let results = {
+                successful: 0,
+                failed: 0,
+                details: {}
+            };
+            
+            for (const sign of signs) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    
+                    const response = await fetch(`/api/signs/${sign}`, { 
+                        signal: controller.signal,
+                        cache: 'no-store'
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        results.successful++;
+                        results.details[sign] = { 
+                            status: 'success',
+                            httpStatus: response.status,
+                            data: data
+                        };
+                    } else {
+                        results.failed++;
+                        results.details[sign] = { 
+                            status: 'error',
+                            httpStatus: response.status,
+                            statusText: response.statusText
+                        };
+                    }
+                } catch (error) {
+                    results.failed++;
+                    results.details[sign] = { 
+                        status: 'error',
+                        error: error.message
+                    };
+                }
+            }
+            
+            if (results.failed === 0) {
+                addTestResult('Signs API Test', `All ${results.successful} zodiac sign endpoints are working correctly!`, 'success', results);
+            } else if (results.successful === 0) {
+                addTestResult('Signs API Test', `All ${results.failed} zodiac sign endpoints failed.`, 'error', results);
+            } else {
+                addTestResult('Signs API Test', `${results.successful} endpoints succeeded, ${results.failed} failed.`, 'warning', results);
+            }
+        }
+        
+        async function testHoroscopeApi() {
+            addTestResult('Horoscope API Test', 'Testing connection to Horoscope API...', 'info');
+            
+            // Test with a few date combinations
+            const dates = [
+                { month: 1, day: 15 },
+                { month: 6, day: 21 },
+                { month: 12, day: 31 }
+            ];
+            
+            let results = {
+                successful: 0,
+                failed: 0,
+                details: {}
+            };
+            
+            for (const date of dates) {
+                const { month, day } = date;
+                const label = `${month}/${day}`;
+                
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    
+                    const response = await fetch(`/api/horoscope?month=${month}&day=${day}`, { 
+                        signal: controller.signal,
+                        cache: 'no-store'
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        results.successful++;
+                        results.details[label] = { 
+                            status: 'success',
+                            httpStatus: response.status,
+                            data: data
+                        };
+                    } else {
+                        results.failed++;
+                        results.details[label] = { 
+                            status: 'error',
+                            httpStatus: response.status,
+                            statusText: response.statusText
+                        };
+                    }
+                } catch (error) {
+                    results.failed++;
+                    results.details[label] = { 
+                        status: 'error',
+                        error: error.message
+                    };
+                }
+            }
+            
+            if (results.failed === 0) {
+                addTestResult('Horoscope API Test', `All ${results.successful} horoscope date tests are working correctly!`, 'success', results);
+            } else if (results.successful === 0) {
+                addTestResult('Horoscope API Test', `All ${results.failed} horoscope date tests failed.`, 'error', results);
+            } else {
+                addTestResult('Horoscope API Test', `${results.successful} tests succeeded, ${results.failed} failed.`, 'warning', results);
+            }
+        }
+        
+        async function runAllTests() {
+            document.getElementById('test-results').innerHTML = '';
+            addTestResult('All Tests', 'Running all diagnostic tests...', 'info');
+            
+            await testServerConnectivity();
+            await testSignsApi();
+            await testHoroscopeApi();
+            
+            addTestResult('Test Suite Complete', 'All tests have completed. Check the results above.', 'info');
+        }
+    </script>
+</body>
+</html> 
