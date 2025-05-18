@@ -513,6 +513,70 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+/**
+ * Use local fallback data when the API is not available
+ */
+function useLocalData(sign, isViewerPage = false) {
+  console.log(`Using local data for ${sign}`);
+  
+  // Convert sign to lowercase for case-insensitive matching
+  const signLower = sign.toLowerCase();
+  
+  // Find the matching sign data
+  if (zodiacData[signLower]) {
+      if (isViewerPage) {
+          // Display in viewer format
+          displaySignDetailsForViewer(zodiacData[signLower], sign);
+      } else {
+          // Find the sign info element - first try for viewer page
+          let signInfo = document.getElementById('sign-info');
+          
+          // If that doesn't exist, try the class from the main page
+          if (!signInfo) {
+              signInfo = document.querySelector('.sign-details-grid');
+          }
+          
+          if (!signInfo) {
+              console.error('Sign info element not found');
+              return;
+          }
+          
+          // Format for main page
+          const formattedHTML = `
+              <div class="sign-detail">
+                  <div class="sign-detail-label">Name</div>
+                  <div class="sign-detail-value">${zodiacData[signLower].name} ${zodiacData[signLower].symbol}</div>
+              </div>
+              <div class="sign-detail">
+                  <div class="sign-detail-label">Dates</div>
+                  <div class="sign-detail-value">${zodiacData[signLower].dates}</div>
+              </div>
+              <div class="sign-detail">
+                  <div class="sign-detail-label">Element</div>
+                  <div class="sign-detail-value">${zodiacData[signLower].element}</div>
+              </div>
+              <div class="sign-detail">
+                  <div class="sign-detail-label">Planet</div>
+                  <div class="sign-detail-value">${zodiacData[signLower].rulingPlanet}</div>
+              </div>
+          `;
+          signInfo.innerHTML = formattedHTML;
+      }
+  } else {
+      console.error(`No local data found for sign: ${sign}`);
+      
+      // Find the sign info element
+      let signInfo = document.getElementById('sign-info');
+      if (!signInfo) {
+          signInfo = document.querySelector('.sign-details-grid');
+      }
+      
+      if (signInfo) {
+          signInfo.innerHTML = `<div class="sign-detail"><div class="sign-detail-value">No information available for ${capitalizeFirstLetter(sign)}</div></div>`;
+      }
+  }
+}
+
 // Galactic Horoscope Web UI JavaScript
 document.addEventListener('DOMContentLoaded', () => {
   // DOM elements
@@ -1850,69 +1914,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateNetworkDependentContent();
   }
 
-  /**
-   * Use local fallback data when the API is not available
-   */
-  function useLocalData(sign, isViewerPage = false) {
-    console.log(`Using local data for ${sign}`);
-    
-    // Convert sign to lowercase for case-insensitive matching
-    const signLower = sign.toLowerCase();
-    
-    // Find the matching sign data
-    if (zodiacData[signLower]) {
-        if (isViewerPage) {
-            // Display in viewer format
-            displaySignDetailsForViewer(zodiacData[signLower], sign);
-        } else {
-            // Find the sign info element - first try for viewer page
-            let signInfo = document.getElementById('sign-info');
-            
-            // If that doesn't exist, try the class from the main page
-            if (!signInfo) {
-                signInfo = document.querySelector('.sign-details-grid');
-            }
-            
-            if (!signInfo) {
-                console.error('Sign info element not found');
-                return;
-            }
-            
-            // Format for main page
-            const formattedHTML = `
-                <div class="sign-detail">
-                    <div class="sign-detail-label">Name</div>
-                    <div class="sign-detail-value">${zodiacData[signLower].name} ${zodiacData[signLower].symbol}</div>
-                </div>
-                <div class="sign-detail">
-                    <div class="sign-detail-label">Dates</div>
-                    <div class="sign-detail-value">${zodiacData[signLower].dates}</div>
-                </div>
-                <div class="sign-detail">
-                    <div class="sign-detail-label">Element</div>
-                    <div class="sign-detail-value">${zodiacData[signLower].element}</div>
-                </div>
-                <div class="sign-detail">
-                    <div class="sign-detail-label">Planet</div>
-                    <div class="sign-detail-value">${zodiacData[signLower].rulingPlanet}</div>
-                </div>
-            `;
-            signInfo.innerHTML = formattedHTML;
-        }
-    } else {
-        console.error(`No local data found for sign: ${sign}`);
-        
-        // Find the sign info element
-        let signInfo = document.getElementById('sign-info');
-        if (!signInfo) {
-            signInfo = document.querySelector('.sign-details-grid');
-        }
-        
-        if (signInfo) {
-            signInfo.innerHTML = `<div class="sign-detail"><div class="sign-detail-value">No information available for ${capitalizeFirstLetter(sign)}</div></div>`;
-        }
-    }
-  }
+  // useLocalData function moved to global scope
 
   // Add this function to the app.js file to create and manage a network status indicator
 
