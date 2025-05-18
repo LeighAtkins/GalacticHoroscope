@@ -7,10 +7,68 @@ import * as THREE from './lib/three.module.js';
 import { OrbitControls } from './lib/OrbitControls.js';
 import { OBJLoader } from './lib/OBJLoader.js';
 
-// Detect if we're running on GitHub Pages
-const isGitHubPages = window.location.hostname.includes('github.io');
+// IMPORTANT: GitHub Pages Detection - Place this at the very top
+const GITHUB_PAGES_DOMAINS = ['github.io', 'github.com', 'leighatkins.github.io'];
+const isGitHubPages = GITHUB_PAGES_DOMAINS.some(domain => window.location.hostname.includes(domain));
+
+// Force GitHub Pages detection in all cases where we're not on localhost
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  console.warn('Non-localhost detected - forcing GitHub Pages compatibility mode');
+  window.isGitHubPages = true; // Global flag for debugging
+}
+
+// Immediate log during parsing to ensure this code runs
+console.log(`Environment: ${isGitHubPages ? 'GitHub Pages' : 'Local Development'}`);
+
 if (isGitHubPages) {
-  console.log('Running on GitHub Pages - API calls will use local data');
+  console.warn('GitHub Pages detected - All API calls will use local fallback data');
+  
+  // Add GitHub Pages notification message
+  document.addEventListener('DOMContentLoaded', () => {
+    // Create GitHub Pages notification
+    const notification = document.createElement('div');
+    notification.style.position = 'fixed';
+    notification.style.top = '0';
+    notification.style.left = '0';
+    notification.style.right = '0';
+    notification.style.backgroundColor = 'rgba(102, 51, 153, 0.9)';
+    notification.style.color = 'white';
+    notification.style.padding = '10px';
+    notification.style.textAlign = 'center';
+    notification.style.zIndex = '9999';
+    notification.style.fontSize = '14px';
+    notification.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+    
+    notification.textContent = 'GitHub Pages Demo Mode: Using local data (APIs disabled)';
+    
+    // Add close button
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.marginLeft = '10px';
+    closeBtn.style.background = 'transparent';
+    closeBtn.style.border = 'none';
+    closeBtn.style.color = 'white';
+    closeBtn.style.fontSize = '18px';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.style.verticalAlign = 'middle';
+    closeBtn.onclick = () => document.body.removeChild(notification);
+    
+    notification.appendChild(closeBtn);
+    document.body.appendChild(notification);
+    
+    // Auto hide after 7 seconds
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+        }, 500);
+      }
+    }, 7000);
+  });
 }
 
 // Global variables for network status tracking
@@ -273,6 +331,13 @@ function updateSignInfo(sign) {
     
     // Show loading state
     signInfo.innerHTML = '<div class="sign-detail"><div class="sign-detail-value">Loading sign information...</div></div>';
+    
+    // GITHUB PAGES SAFETY CHECK - Always ensure we never make API calls on GitHub Pages
+    if (isGitHubPages || window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        console.warn('GitHub Pages or non-localhost environment - using local sign data');
+        useLocalData(sign, isViewerPage);
+        return;
+    }
     
     // When on GitHub Pages, always use local data
     if (isGitHubPages) {
@@ -793,6 +858,24 @@ document.addEventListener('DOMContentLoaded', () => {
         
         modelContainer.appendChild(loader);
         
+        // GitHub Pages specific fix - ensure container has dimensions
+        if (isGitHubPages) {
+          // Force container to be visible and properly sized
+          modelContainer.style.display = 'block';
+          modelContainer.style.visibility = 'visible';
+          modelContainer.style.width = '100%';
+          modelContainer.style.height = '500px';
+          modelContainer.style.minHeight = '500px';
+          
+          // Force a reflow to apply styles
+          void modelContainer.offsetHeight;
+          
+          // Force resize event to update Three.js
+          window.dispatchEvent(new Event('resize'));
+          
+          console.log('Applied GitHub Pages container dimension fix');
+        }
+        
         // Check if network is available - if not, immediately go to fallback
         if (!isNetworkAvailable()) {
             console.log('Network offline - using fallback for 3D model');
@@ -855,6 +938,17 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   async function fetchHoroscope(month, day) {
     try {
+        // GITHUB PAGES SAFETY CHECK - Always ensure we never make API calls on GitHub Pages
+        if (isGitHubPages || window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            console.warn('GitHub Pages or non-localhost environment detected - bypassing API call');
+            const sign = determineZodiacSign(month, day);
+            if (sign) {
+                console.log(`Using local data for ${sign.toLowerCase()}`);
+                return getFallbackHoroscope(sign, month, day);
+            }
+            throw new Error('Could not determine sign from date');
+        }
+        
         console.log(`Fetching horoscope for ${month}/${day} from ${API_URL}`);
         
         // When on GitHub Pages, always use local data
