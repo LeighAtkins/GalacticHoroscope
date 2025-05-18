@@ -31,12 +31,7 @@ export class ModelViewer {
         throw new Error(`Container element with ID '${this.containerId}' not found`);
       }
 
-      // Ensure the container is actually in the DOM and visible before measuring
-      if (!this.container.offsetParent) {
-        console.warn('Container is not visible in DOM - forcing display');
-        this.container.style.display = 'block';
-        this.container.style.visibility = 'visible';
-      }
+ 
 
       // Setup Three.js scene
       this.scene = new THREE.Scene();

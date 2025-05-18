@@ -1,0 +1,214 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# WebGL and Three.js Troubleshooting Guide
+
+## Container Dimensions and Visibility
+
+- **Ensure Container Has Dimensions Before Initialization**
+  - WebGL needs actual dimensions to render properly
+  - Check `clientWidth` and `clientHeight` before initializing
+  - Log dimensions for debugging: `console.log('Container dimensions:', width, 'x', height)`
+  - Use fallback dimensions if container is too small:
+  ```javascript
+  // ✅ DO: Check dimensions and provide fallbacks
+  const width = container.clientWidth || 500;  // Fallback width
+  const height = container.clientHeight || 500;  // Fallback height
+  
+  if (width < 100 || height < 100) {
+    console.warn('Container dimensions too small, using explicit dimensions');
+    container.style.width = '100%';
+    container.style.height = '500px';
+    // Force reflow to apply styles
+    void container.offsetHeight;
+  }
+  ```
+
+- **Handle Hidden Elements**
+  - WebGL elements in initially hidden containers will fail to render
+  - Wait for containers to become visible before initializing
+  ```javascript
+  // ✅ DO: Ensure visibility before initializing
+  if (container.offsetParent === null || container.style.display === 'none') {
+    console.log('Container not visible, deferring initialization');
+    return new Promise(resolve => {
+      // Wait until the element becomes visible
+      const observer = new MutationObserver(() => {
+        if (container.offsetParent !== null && container.style.display !== 'none') {
+          observer.disconnect();
+          resolve();
+        }
+      });
+      observer.observe(document.body, { subtree: true, attributes: true });
+    }).then(() => initializeThreeJS());
+  }
+  ```
+
+## Timing and Page Lifecycle
+
+- **Defer Initialization Until Container is Ready**
+  - Use promises or callbacks to ensure proper timing
+  - Add reasonable delays when containers are being animated
+  ```javascript
+  // ✅ DO: Use promises to manage initialization sequence
+  function showContainer() {
+    container.style.display = 'block';
+    // Force reflow
+    void container.offsetHeight;
+    
+    return new Promise(resolve => {
+      // Allow time for any CSS transitions
+      setTimeout(() => {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        console.log('Container now visible with dimensions:', width, 'x', height);
+        resolve({ width, height });
+      }, 50);
+    });
+  }
+  
+  // Use in sequence
+  showContainer()
+    .then(dimensions => initThreeJS(dimensions))
+    .catch(err => console.error('Failed to initialize:', err));
+  ```
+
+- **Handle Different Page Types**
+  - Use conditional logic based on page context
+  ```javascript
+  // ✅ DO: Handle different page contexts
+  const isIndexPage = document.body.classList.contains('index-page');
+  
+  if (isIndexPage) {
+    // Index page specific initialization
+  } else {
+    // Other pages initialization
+  }
+  ```
+
+## Rendering and Performance
+
+- **Explicit Canvas Styling**
+  - Ensure canvas element has explicit styles
+  ```javascript
+  // ✅ DO: Set explicit styles on the WebGL canvas
+  renderer.domElement.style.display = 'block';
+  renderer.domElement.style.width = '100%';
+  renderer.domElement.style.height = '100%';
+  ```
+
+- **Force Initial Render**
+  - Manually trigger first render after initialization
+  ```javascript
+  // ✅ DO: Trigger initial render explicitly
+  renderer.render(scene, camera);
+  ```
+
+- **Force Resize Events**
+  - Manually dispatch resize events to update renderer dimensions
+  ```javascript
+  // ✅ DO: Force resize events after visibility changes
+  window.dispatchEvent(new Event('resize'));
+  ```
+
+## Error Handling and Fallbacks
+
+- **Implement Robust Error Handling**
+  - Always use try-catch blocks around initialization
+  - Provide visual fallbacks when rendering fails
+  ```javascript
+  // ✅ DO: Provide fallbacks for rendering failures
+  try {
+    await viewer.init();
+    await viewer.loadModel(sign);
+  } catch (error) {
+    console.error('WebGL error:', error);
+    showFallback(container, sign);
+  }
+  
+  function showFallback(container, sign) {
+    // Clear container
+    container.innerHTML = '';
+    // Show fallback content
+    container.innerHTML = `
+      <div class="fallback-content">
+        <div class="sign-symbol">${getSignSymbol(sign)}</div>
+        <div class="fallback-message">3D model unavailable</div>
+      </div>
+    `;
+  }
+  ```
+
+- **Check for WebGL Support**
+  - Detect WebGL support before attempting to render
+  ```javascript
+  // ✅ DO: Check for WebGL support
+  function isWebGLAvailable() {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && 
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  if (!isWebGLAvailable()) {
+    console.warn('WebGL not supported - showing fallback');
+    showFallback();
+    return;
+  }
+  ```
+
+## Cleanup and Disposal
+
+- **Properly Clean Up Resources**
+  - Always dispose of Three.js objects when no longer needed
+  ```javascript
+  // ✅ DO: Properly dispose of resources
+  function dispose() {
+    if (controls) controls.dispose();
+    if (renderer) renderer.dispose();
+    // Remove event listeners
+    window.removeEventListener('resize', onWindowResize);
+    // Clear references
+    scene = null;
+    camera = null;
+    renderer = null;
+    controls = null;
+    model = null;
+  }
+  ```
+
+## Debugging Strategies
+
+- **Use Staged Debugging Approach**
+  1. Check container dimensions and visibility
+  2. Verify Three.js initialization sequence
+  3. Examine model loading and positioning
+  4. Inspect render loop and camera settings
+  
+- **Add Debug Visualization**
+  - Add temporary visual elements to diagnose issues
+  ```javascript
+  // ✅ DO: Add debug visuals when troubleshooting
+  function addDebugVisuals(scene) {
+    // Add coordinate axes
+    const axesHelper = new THREE.AxesHelper(5);
+    scene.add(axesHelper);
+    
+    // Add grid for reference
+    const gridHelper = new THREE.GridHelper(10, 10);
+    scene.add(gridHelper);
+    
+    // Add a test cube to verify rendering
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+    
+    return { axesHelper, gridHelper, cube };
+  }
+  ```

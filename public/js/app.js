@@ -723,12 +723,29 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Hide 3D viewer section
-      if (zodiacViewerSection) {
-        zodiacViewerSection.classList.add('fade-out');
+      const zodiacViewer = document.querySelector('.zodiac-viewer');
+      if (zodiacViewer) {
+        zodiacViewer.classList.add('fade-out');
         setTimeout(() => {
-          zodiacViewerSection.style.display = 'none';
-          zodiacViewerSection.classList.add('initial-hidden');
-          zodiacViewerSection.classList.remove('animate-fade-in', 'fade-out');
+          zodiacViewer.style.display = 'none';
+          zodiacViewer.classList.add('initial-hidden');
+          zodiacViewer.classList.remove('animate-fade-in', 'fade-out');
+          
+          // Also clear the model viewer contents
+          const modelViewer = document.getElementById('model-viewer');
+          if (modelViewer) {
+            modelViewer.innerHTML = '';
+            
+            // If model viewer instance exists, dispose it
+            if (modelViewerInstance) {
+              try {
+                modelViewerInstance.dispose();
+                modelViewerInstance = null;
+              } catch (e) {
+                console.log('Error disposing model viewer:', e);
+              }
+            }
+          }
         }, 500);
       }
       
