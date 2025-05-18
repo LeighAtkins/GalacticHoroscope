@@ -49,7 +49,7 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from the public directory
-app.use(express.static('public', {
+app.use(express.static('docs', {
   extensions: ['html', 'htm'],
   setHeaders: (res, path, stat) => {
     // Set appropriate headers for OBJ files
@@ -60,7 +60,7 @@ app.use(express.static('public', {
 }));
 
 // Check if models directory exists and has content
-const modelsPath = path.join(__dirname, 'public', 'models');
+const modelsPath = path.join(__dirname, 'docs', 'models');
 if (!fs.existsSync(modelsPath)) {
   console.error('ERROR: The models directory does not exist at:', modelsPath);
   console.error('Please create it and add .obj model files for the zodiac signs.');
